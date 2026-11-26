@@ -12,6 +12,12 @@ LINE = (
 )
 
 
+def validate(text: str) -> None:
+    """Gate the entry: 1-200 characters and not whitespace-only."""
+    assert 1 <= len(text) <= 200, "entry must be 1-200 characters"
+    assert text.strip(), "entry must not be whitespace-only"
+
+
 def main() -> None:
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
@@ -22,8 +28,13 @@ def main() -> None:
     with open(path, "r", encoding="utf-8", newline="") as f:
         written = f.read()
     assert written == LINE, "entry.txt does not match the line"
-    assert 1 <= len(written) <= 200, "entry must be 1-200 characters"
-    assert written.strip(), "entry must not be whitespace-only"
+    validate(written)
+    # Read-back byte count: file size must equal the line's UTF-8 length.
+    expected_bytes = len(LINE.encode("utf-8"))
+    actual_bytes = os.path.getsize(path)
+    assert actual_bytes == expected_bytes, (
+        f"entry.txt byte count {actual_bytes} != expected {expected_bytes}"
+    )
 
 
 if __name__ == "__main__":
